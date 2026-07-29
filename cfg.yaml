@@ -1,0 +1,21 @@
+N   : 30  # Grid length
+tstep: 1.e-3
+lam : 0.0 # Strength of rotation
+bc  : "periodic"
+forcing:
+  type: None
+ic  : "gaussian"
+udrag : None
+hdrag : None
+cor: 'f-plane'
+# IO
+outfile : "test.nc"
+outvars:
+  - h
+  - u
+  - v
+  - E
+  - q
+
+io_freq: 10
+print_freq: 10

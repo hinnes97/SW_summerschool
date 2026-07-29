@@ -24,7 +24,7 @@ class AB3:
             self.bootstrap()
             return
             
-        # Get new set of tendencies
+        # Get the new set of tendencies
         tend = self.grid.tendencies()
         # Update the history array
         self.history.appendleft(tend)
@@ -34,7 +34,8 @@ class AB3:
             var = var + tstep*(self.c2*self.history[0][v] + self.c1*self.history[1][v] + self.c2*self.history[2][v])
 
         model.time += self.tstep
-
+        self.grid.update_diagnostics()
+        
     def bootstrap(self):
         """Bootstrap RK4 method, to start integration"""
 
@@ -42,29 +43,33 @@ class AB3:
         y0 = {"h": self.grid.h.copy(),
               "v": self.grid.v.copy(),
               "u": self.grid.u.copy()}
-                        
+
         k1 = self.grid.tendencies()
         self.history.appendleft(k1)
         
         for v, var in grid:
             var =  y0[v] + 0.5*k1[v]*self.tstep
 
+        self.grid.update_diagnostics()
         k2 = self.grid.tendencies()
 
         for v, var in grid:
             var = y0[v] + 0.5*k2[v]*self.tstep
 
+        self.grid.update_diagnostics()
         k3 = self.grid.tendencies()
 
         for v, var in grid:
             var = y0[v] + k3[v]*self.tstep
 
+        self.grid.update_diagnostics()
         k4 = self.grid.tendencies()
 
         # Now do step
         for v, var in grid:
             var = y0[v] + self.tstep/6. * (k1[v] + 2*k2[v] + 2*k3[v] + k4[v])
 
+        self.grid.update_diagnostics()
         model.time += self.tstep
             
     
