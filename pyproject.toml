@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sw-summerschool"
+version = "0.1.0"
+description = "Shallow-water model exercises for a computational methods summer school"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+dependencies = ["numpy", "scipy", "PyYAML", "netCDF4", "matplotlib"]
+
+[project.optional-dependencies]
+notebooks = ["jupyterlab", "ipympl", "xarray"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
