@@ -1,4 +1,5 @@
 import netCDF4
+import os
 
 class IO:
     def __init__(self, outfile, outvars):
@@ -7,7 +8,10 @@ class IO:
 
 
     def initialise_output(self, grid):
-
+        """Initialise output on the uniform centred grid"""
+        if os.path.exists(self.outfile):
+            os.remove(self.outfile)
+            
         self.data = netCDF4.Dataset(self.outfile, "w", format="NETCDF4")
 
         # Initialise dimensions
@@ -33,19 +37,25 @@ class IO:
             self.data.createVariable(var, "f8", grid.vargrid[var])
 
         # Write grid variables
-        self.xmids = grid.xm[2:-2]
-        self.ymids = grid.ym[2:-2]
-        self.xedges = grid.xe[2:-3] # Always periodic
+        self.xmids[:] = grid.xm[2:-2]
+        self.ymids[:] = grid.ym[2:-2]
+        self.xedges[:] = grid.xe[2:-3] # Always periodic
 
         if grid.ybc == "free-slip-wall":
-            self.yedges = grid.ye[2:-2]
+            self.yedges[:] = grid.ye[2:-2]
         elif grid.ybc == 'periodic':
-            self.yedges = grid.ye[2:-3]
-            
+            self.yedges[:] = grid.ye[2:-3]
+
+        # Make boundary condition attribute
+        self.data.ybc = grid.ybc
+        
     def write_variables(self, time, grid):
         it = len(self.times)
         self.times[it] = time
 
+        if "E" in self.outvars or "enstrophy" in self.outvars:
+            grid.io_diagnostics()
+            
         for var in self.outvars:
             self.data[var][it] = grid[var][grid.realslice[var]]
 

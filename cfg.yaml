@@ -1,12 +1,23 @@
 N   : 30  # Grid length
 tstep: 1.e-3
-lam : 0.0 # Strength of rotation
+Ro : 0 # Strength of rotation
+beta: 0.1
 bc  : "periodic"
 forcing:
-  type: None
-ic  : "gaussian"
-udrag : None
-hdrag : None
+  type: "None"
+  Q: 1.
+ic:
+  type: "barotropic_jet"
+  amp: 0.1
+  width: 0.4
+  
+udrag :
+  type: "None"
+  tau_u: 10.
+hdrag :
+  type: "None"
+  tau_h: 10.
+  
 cor: 'f-plane'
 # IO
 outfile : "test.nc"

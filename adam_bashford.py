@@ -7,7 +7,7 @@ class AB3:
 
         # Timestep
         self.tstep = model.tstep
-        
+        self.model = model
         # Define the three states required for timestepping
         self.grid = model.grid
         self.history = deque(maxlen=3)
@@ -31,10 +31,10 @@ class AB3:
 
         # March variables forward
         for v,var in self.grid:
-            var = var + tstep*(self.c2*self.history[0][v] + self.c1*self.history[1][v] + self.c2*self.history[2][v])
+            var[self.grid.progslice[v]] = var[self.grid.progslice[v]] + self.tstep*(self.c0*self.history[0][v] + self.c1*self.history[1][v] + self.c2*self.history[2][v])
 
-        model.time += self.tstep
-        self.grid.update_diagnostics()
+        self.model.time += self.tstep
+        #self.grid.update_diagnostics()
         
     def bootstrap(self):
         """Bootstrap RK4 method, to start integration"""
@@ -47,30 +47,30 @@ class AB3:
         k1 = self.grid.tendencies()
         self.history.appendleft(k1)
         
-        for v, var in grid:
-            var =  y0[v] + 0.5*k1[v]*self.tstep
+        for v, var in self.grid:
+            var[self.grid.progslice[v]] =  y0[v][self.grid.progslice[v]] + 0.5*k1[v]*self.tstep
 
-        self.grid.update_diagnostics()
+        #self.grid.update_diagnostics()
         k2 = self.grid.tendencies()
 
-        for v, var in grid:
-            var = y0[v] + 0.5*k2[v]*self.tstep
+        for v, var in self.grid:
+            var[self.grid.progslice[v]] = y0[v][self.grid.progslice[v]] + 0.5*k2[v]*self.tstep
 
-        self.grid.update_diagnostics()
+        #self.grid.update_diagnostics()
         k3 = self.grid.tendencies()
 
-        for v, var in grid:
-            var = y0[v] + k3[v]*self.tstep
+        for v, var in self.grid:
+            var[self.grid.progslice[v]] = y0[v][self.grid.progslice[v]] + k3[v]*self.tstep
 
-        self.grid.update_diagnostics()
+        #self.grid.update_diagnostics()
         k4 = self.grid.tendencies()
 
         # Now do step
-        for v, var in grid:
-            var = y0[v] + self.tstep/6. * (k1[v] + 2*k2[v] + 2*k3[v] + k4[v])
+        for v, var in self.grid:
+            var[self.grid.progslice[v]] = y0[v][self.grid.progslice[v]] + self.tstep/6. * (k1[v] + 2*k2[v] + 2*k3[v] + k4[v])
 
-        self.grid.update_diagnostics()
-        model.time += self.tstep
+        #self.grid.update_diagnostics()
+        self.model.time += self.tstep
             
     
         

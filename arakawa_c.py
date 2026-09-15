@@ -1,11 +1,11 @@
 import numpy as np
 import forcing
-from initial_conditions import vortex, gaussian
+from initial_conditions import vortex, gaussian, plane_gravity_wave, barotropic_jet, rossby
 
 class ArakawaCGrid:
 
-    def __init__(self, N, lam, bc='periodic', force =None, ic=None, udrag=None,
-                 hdrag = None, cor='f-plane'):
+    def __init__(self, N, Ro, bc='periodic', force =None, ic=None, udrag=None,
+                 hdrag = None, beta=0.):
         """Creates Arakawa C-grid object with 2*N x points and N y-points"""
 
         # Set resolution
@@ -22,7 +22,7 @@ class ArakawaCGrid:
         # Mid x (with ghost)
         self.xm = np.linspace(-1-self.d*1.5, 1.+self.d*1.5, self.Nx+4)
         # Mid y (with ghost)
-        self.ym = np.linspace(-0.5-self.d*1.5, 1.+self.d*1.5,self.Ny+4)
+        self.ym = np.linspace(-0.5-self.d*1.5, 0.5+self.d*1.5,self.Ny+4)
 
         # Set y boundary condition
         self.ybc = bc
@@ -53,13 +53,17 @@ class ArakawaCGrid:
         self.realslice = {
             "h": hgrid_slice,
             "u": ugrid_slice,
-            "K": hgrid_slice,
             "v": vgrid_slice,
             "K": hgrid_slice,
             "q": qgrid_slice,
             "E":()
         }
-        
+
+        self.progslice={
+            "h": hgrid_slice,
+            "u": (slice(2,-2,1), slice(2,-2,1)),
+            "v": (slice(2,-2,1), slice(2,-2,1))
+        }
 
         # Set up grids, including halo points
         # Main variables u,v,h
@@ -68,10 +72,8 @@ class ArakawaCGrid:
         self.h = np.zeros((self.Nx+4, self.Ny+4))
 
         # Gravity parameter
-        #self.g = g
-        # Planetary scale waves - use Lambda = a^2/L_R^2 = a^2*beta/sqrt(gH)
-        self.lam = lam
-        self.cor = cor
+        self.Ro = Ro
+        self.beta = beta
         
         # Helper variables
         self.ustar = np.zeros((self.Nx+3, self.Ny+2)) # mass flux on u points
@@ -106,28 +108,49 @@ class ArakawaCGrid:
         # Initial condition
         self.ic = ic
 
-        if self.ic == "gaussian":
+        if self.ic["type"] == "gaussian":
             gaussian(self, 0., 0., 0.25, 0.25, 0.1)
-        elif self.ic == "vortex":
+        elif self.ic["type"] == "vortex":
             vortex(self, 0.25, 0.1)
+        elif self.ic["type"] == "plane_gravity_wave":
+            print('plane wave ic')
+            plane_gravity_wave(self, self.ic["amp"], self.ic["width"])
+        elif self.ic["type"] == "barotropic_jet":
+            barotropic_jet(self, self.ic["amp"], self.ic["width"])
+        elif self.ic["type"] == 'rossby':
+            rossby(self, self.ic["amp"])
         else:
             # Don't do anything
-            self.h = 1.
+            self.h = np.ones_like(self.h)
 
         self.apply_bcs()
         self.update_diagnostics()
         self.io_diagnostics()
-
+        
         # Tell IO what grid each variable is on
         self.vargrid = {
-            "h": ("time","xmid", "ymid"),
-            "u": ("time","xedge", "ymid"),
-            "v": ("time","xmid", "yedge"),
-            "K": ("time","xmid", "ymid"),
-            "q": ("time","xedge", "yedge"),
+            "h": ("time","x", "y"),
+            "u": ("time","x", "y"),
+            "v": ("time","x", "y"),
+            "K": ("time","x", "y"),
+            "q": ("time","x", "y"),
             "E": ("time")
         }
 
+        # What type of interpolation needs to be done on output 
+        self interptype = {
+            "h": None,
+            "u": "x",
+            "v": "y",
+            "q": "xy",
+            "K": None,
+            "E": None
+        }
+
+        # Which variables are defined on x edges
+        grid.xe_vars = ("q", "u")
+        # Same, for y
+        grid.ye_vars = ("q", "v")
 
     def __iter__(self):
         yield "u", self.u
@@ -153,11 +176,11 @@ class ArakawaCGrid:
         self.det = 1./24 *  (q[2:,1:] + 2*q[1:-1, 1:] + q[1:-1,:-1] + 2*q[2:,:-1])
 
     def calc_ustars(self):
-        hu = 0.5*(self.h[:-1,:] + self.h[1:,:])
-        hv = 0.5*(self.h[:,:-1] + self.h[:,1:])
+        hu = 0.5*(self.h[:-1,1:-1] + self.h[1:,1:-1])
+        hv = 0.5*(self.h[1:-1,:-1] + self.h[1:-1,1:])
 
-        self.ustar = hu*self.u[1:-1,:]
-        self.vstar = hv*self.v[:,1:-1]
+        self.ustar = hu*self.u[1:-1,1:-1]
+        self.vstar = hv*self.v[1:-1,1:-1]
 
     def apply_bcs(self):
         if self.ybc == 'free-slip-wall':
@@ -166,10 +189,10 @@ class ArakawaCGrid:
             self.v[:,:2] = 0.
             self.v[:,-2:] = 0.
 
-            self.h[:,:2] = self.h[:,2]
-            self.h[:,-2:] = self.h[:,-3]
-            self.u[:,:2] = self.u[:,2]
-            self.u[:,-2:] = self.u[:,-3]
+            self.h[:,:2] = self.h[:,2,None]
+            self.h[:,-2:] = self.h[:,-3,None]
+            self.u[:,:2] = self.u[:,2,None]
+            self.u[:,-2:] = self.u[:,-3,None]
 
         else:
             # Periodic
@@ -200,14 +223,9 @@ class ArakawaCGrid:
             var[-1,:] = var[3,:]
         
     def coriolis(self):
-
-        if self.cor == 'beta-plane':
-            # Only equatorial beta-plane currently implemented, in non-dimensionalised form
-            y = np.linspace(-0.5, 0.5, self.Ny+3)
-            return self.lam*y
-        elif self.cor == 'f-plane':
-            # Constant f-plane
-            return self.lam
+        # Only equatorial beta-plane currently implemented, in non-dimensionalised form
+        y = np.linspace(-0.5, 0.5, self.Ny+3)
+        return 1/self.Ro + self.beta*y
         
     def calc_vorticity(self):
         """Calculate the potential vorticity q = (zeta + f)/h
@@ -226,26 +244,26 @@ class ArakawaCGrid:
     def calc_KE(self):
         """Kinetic energy at h grid (centres)"""
         
-        usq = 0.5*((self.u**2)[0:-1,:] + (self.u**2)[1:,:])
-        vsq = 0.5*((self.v**2)[:,0:-1] + (self.v**2)[:,1:])
+        usq = 0.5*((self.u**2)[1:-2,1:-1] + (self.u**2)[2:-1,1:-1])
+        vsq = 0.5*((self.v**2)[1:-1,1:-2] + (self.v**2)[1:-1,2:-1])
 
         self.K = 0.5*(usq + vsq)
-
 
     def divergence(self):
         """"Calculating the divergence of the mass flux (Arakawa and Lamb, eq. 3.2)
             Do not bother calculating ghost cells, only needed to update h"""
-
-        return 1./self.d * (self.ustar[2:-1,1:-1] - self.ustar[1:-2,1:-1] + self.vstar[1:-1,2:-1] - self.vstar[1:-1,1:-2])
-
+        # dim ustar Nx+3, Ny+2, dim vstar Nx+2, Ny+3
+        # want variable Nx, Ny
+        return 1./self.d * (self.ustar[2:-1,1:-1] - self.ustar[1:-2,1:-1] + self.vstar[1:-1,2:-1] - self.vstar[1:-1, 1:-2])
+       
     def dh_dt(self):
         """Return dh_dt from equation 3.1, AL80"""
-        if self.hdrag == "rayleigh":
-            drag = -self.h/self.hdrag["tau_h"]
+        if self.hdrag["type"] == "rayleigh":
+            drag = -self.h[self.realslice["h"]]/self.hdrag["tau_h"]
         else:
             drag = 0.
             
-        return -self.divergence() + self.forcing() + drag
+        return -self.divergence() + self.forcing(self) + drag
 
 
     def du_dt(self):
@@ -262,14 +280,13 @@ class ArakawaCGrid:
         t5 = -self.eps[1:,1:-1]*self.ustar[2:,1:-1]
         t6 = self.eps[:-1,1:-1]*self.ustar[:-2,1:-1]
 
-        #phi = self.g*self.h
-        t7 = -1./self.d *(self.K[1:,1:-1] + self.h[1:,1:-1] - self.K[:-1,1:-1] - self.h[:-1,1:-1])
+        t7 = -1./self.d *(self.K[1:,1:-1] + self.h[2:-1,2:-2] - self.K[:-1,1:-1] - self.h[1:-2,2:-2])
 
-        if self.udrag == "rayleigh":
-            drag = -self.u/self.udrag["tau_u"]
+        if self.udrag["type"] == "rayleigh":
+            drag = -self.u[2:-2,2:-2]/self.udrag["tau_u"]
         else:
             drag = 0.0
-            
+
         return t1 + t2 + t3 + t4 + t5 + t6 + t7 + drag
     
     def dv_dt(self):
@@ -284,10 +301,10 @@ class ArakawaCGrid:
         t5 = -self.phi[1:-1,1:]*self.vstar[1:-1,2:]
         t6 =  self.phi[1:-1,:-1]*self.vstar[1:-1,:-2]
 
-        t7 = -1./self.d*(self.K[1:-1, 1:] + self.h[1:-1, 1:] - self.K[1:-1,:-1] - self.h[1:-1,:-1])
+        t7 = -1./self.d*(self.K[1:-1, 1:] + self.h[2:-2, 2:-1] - self.K[1:-1,:-1] - self.h[2:-2,1:-2])
 
-        if self.udrag == "rayleigh":
-            drag = -self.v/self.udrag["tau_u"]
+        if self.udrag["type"] == "rayleigh":
+            drag = -self.v[2:-2,2:-2]/self.udrag["tau_u"]
         else:
             drag = 0.0
             
@@ -296,7 +313,7 @@ class ArakawaCGrid:
     def tendencies(self):
         # Make sure boundary conditions have been applied
         self.apply_bcs()
-        
+        self.update_diagnostics()
         return {
             "h": self.dh_dt(),
             "u": self.du_dt(),
@@ -310,7 +327,7 @@ class ArakawaCGrid:
         PE = 0.5*self.h
 
         # Sum over domain (ignoring ghosts)
-        self.E = np.sum(self.h[2:-2,2:-2]*(self.K[2:-2,2:-2] + PE[2:-2,2:-2]))
+        self.E = np.sum(self.h[2:-2,2:-2]*(self.K[1:-1,1:-1] + PE[2:-2,2:-2]))
 
     def total_enstrophy(self):
         """Sum total entstrophy over the domain"""
@@ -329,6 +346,8 @@ class ArakawaCGrid:
 
     def io_diagnostics(self):
     # Variables not required for timestepping
+        self.apply_bcs()
+        self.update_diagnostics()
         self.total_E()
         self.total_enstrophy()
     
