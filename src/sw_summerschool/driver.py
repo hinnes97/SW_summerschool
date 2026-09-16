@@ -76,7 +76,7 @@ class SW_model:
         for i in range(self.Nt_tot,self.Nt_tot + Nt):
             self.tstepper.step()
             if i%self.cfg["io_freq"]==0:
-                print(i, self.cfg["io_freq"])
+                #print(i, self.cfg["io_freq"])
                 self.io.write_variables(self.time, self.grid)
 
             if i%self.cfg["print_freq"]==0:
