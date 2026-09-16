@@ -115,7 +115,7 @@ class ArakawaCGrid:
                      self.ic["y0"])
             
         elif self.ic["type"] == "vortex":
-            vortex(self, 0.25, 0.1)
+            vortex(self, self.ic["amp"], self.ic["width"])
         elif self.ic["type"] == "plane_gravity_wave":
             print('plane wave ic')
             plane_gravity_wave(self, self.ic["amp"], self.ic["width"])

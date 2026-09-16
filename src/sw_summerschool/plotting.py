@@ -78,7 +78,7 @@ def plot_contour_snapshot(
     if len(y) != ny:
         raise ValueError("len(y) must equal var.shape[2]")
 
-    if not 0 <= index < nt:
+    if not 0 <= index < nt and index != -1:
         raise ValueError(f"index must be between 0 and {nt - 1}")
 
     # Determine colour limits
@@ -220,7 +220,7 @@ def plot_height_velocity_snapshot(
     if len(y) != ny:
         raise ValueError("len(y) must equal h.shape[2]")
 
-    if not 0 <= index < nt:
+    if (not 0 <= index < nt) and index != -1:
         raise ValueError(f"index must be between 0 and {nt - 1}")
 
     # Determine colour limits
