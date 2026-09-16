@@ -9,10 +9,21 @@ description = "Shallow-water model exercises for a computational methods summer 
 readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE"}
-dependencies = ["numpy", "scipy", "PyYAML", "netCDF4", "matplotlib"]
+dependencies = [
+    "numpy",
+    "scipy",
+    "PyYAML",
+    "netCDF4",
+    "matplotlib",
+    "xarray",
+    "ipython",
+    "ipykernel",
+    "ipympl",
+    "ipywidgets",
+]
 
 [project.optional-dependencies]
-notebooks = ["jupyterlab", "ipympl", "xarray"]
+notebooks = ["jupyterlab"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

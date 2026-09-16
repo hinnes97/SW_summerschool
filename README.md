@@ -13,8 +13,29 @@ python -m pip install -e .
 ```
 
 Editable installation makes changes under `src/` available without reinstalling.
-To include the notebook tools, use `python -m pip install -e ".[notebooks]"`.
-Use that same environment as the notebook kernel.
+The default installation includes xarray, IPython (including autoreload),
+ipykernel, ipympl and ipywidgets for interactive Matplotlib plots.
+To also install JupyterLab, use `python -m pip install -e ".[notebooks]"`.
+
+Use the installed environment as the notebook kernel. To make it selectable in
+an existing Jupyter installation, run from the activated environment:
+
+```sh
+python -m ipykernel install --user --name sw-summerschool --display-name "SW summerschool"
+```
+
+Select **SW summerschool** in the notebook's kernel menu. After installing or
+updating dependencies, restart the kernel and run:
+
+```python
+%matplotlib widget
+%load_ext autoreload
+%autoreload 2
+```
+
+The extension-loading command is `%load_ext` (with an underscore). Autoreload
+refreshes imported Python modules before executing cells; widget plots require
+a notebook frontend with widget support, such as JupyterLab.
 
 ## Run a short simulation
 

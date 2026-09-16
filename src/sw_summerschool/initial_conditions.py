@@ -24,8 +24,8 @@ def plane_gravity_wave(grid, amp, width):
 
     # Make gaussian bump with essentially no y-structure (~infinite width)
     xx, yy = np.meshgrid(grid.xm, grid.ym, indexing='ij')
-    grid.h = 1. + amp*np.exp(-xx**2/width**2)*np.sin(2*np.pi*xx*3/width)
-    #grid.h = 1 + amp*np.sin(2.*np.pi*xx/width)
+    #grid.h = 1. + amp*np.exp(-xx**2/width**2)*np.sin(2*np.pi*xx*3/width)
+    grid.h = 1 + amp*np.sin(2.*np.pi*xx/width)
     
     # For gravity waves (travelling in +x direction), u = h - 1
     # Careful! u is not on the same grid as h

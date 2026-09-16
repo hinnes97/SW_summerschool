@@ -593,6 +593,8 @@ def animate_height_velocity(
         u[0].T[sl, sl],
         v[0].T[sl, sl],
         scale=quiver_scale,
+        # Keep arrows above contours recreated on each animation frame.
+        zorder=2,
     )
 
     ax.set_xlabel("x")
