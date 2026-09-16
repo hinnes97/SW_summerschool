@@ -109,7 +109,11 @@ class ArakawaCGrid:
         self.ic = ic
 
         if self.ic["type"] == "gaussian":
-            gaussian(self, 0., 0., 0.25, 0.25, 0.1)
+            gaussian(self, self.ic["amp"],
+                     self.ic["width"],
+                     self.ic["x0"],
+                     self.ic["y0"])
+            
         elif self.ic["type"] == "vortex":
             vortex(self, 0.25, 0.1)
         elif self.ic["type"] == "plane_gravity_wave":
