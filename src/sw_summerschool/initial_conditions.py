@@ -1,10 +1,22 @@
 import numpy as np
 from scipy.integrate import cumulative_trapezoid, trapezoid
 
-def gaussian(grid, x0, y0, lx, ly, amp):
-    """Gaussian height bump"""
-    xx, yy = np.meshgrid(grid.xm, grid.ym, indexing='ij')
-    grid.h = 1 + amp*np.exp(-(xx - x0)**2/lx**2)*np.exp(-(yy - y0)**2/ly**2)
+def gaussian(grid, amp, width, x0, y0):
+    """Initialise height field with a Gaussian height anomaly
+    Paramters
+    ---------
+    grid: ArakawaCgrid
+        Grid object providing coordinates and variables
+    amp: float
+        Amplitude of Gaussian perturbation
+    width: float
+        Width of the Gaussian perturbation
+    x0: float
+        x-position of Gaussian perturbation
+    y0: float
+        y-position of Gaussian perturbation
+    """
+    raise NotImplementedError("Todo: Create this function!")
 
 def vortex(grid, r0, amp):
     """Geostrophically balanced vortex
