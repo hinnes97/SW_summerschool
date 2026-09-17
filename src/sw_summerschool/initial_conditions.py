@@ -110,7 +110,7 @@ def barotropic_jet(grid, amp, width):
     
     grid.u = amp/np.cosh(ym/width)**2
 
-    dhdy = -1./grid.Ro*(1. + grid.beta*grid.ym)*amp*1./np.cosh(grid.ym/width)**2
+    dhdy = -(1./grid.Ro + grid.beta*grid.ym)*amp*1./np.cosh(grid.ym/width)**2
     h_raw = cumulative_trapezoid(dhdy, grid.ym, initial=0.0)
 
     C = 1 - trapezoid(h_raw[2:-2], grid.ym[2:-2])
@@ -121,7 +121,7 @@ def barotropic_jet(grid, amp, width):
     # V perturbation
     kx = 4*np.pi / 2.0   # one wave across x-domain [-1,1]
     xv, yv = np.meshgrid(grid.xm, grid.ye, indexing="ij")
-    eps = 1.e-1
+    eps = 1.e-1*amp
     Lp = 0.15
     grid.v += (
         eps
