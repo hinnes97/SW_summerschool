@@ -261,8 +261,7 @@ class ArakawaCGrid:
         Notes
         -----
         Requires nonzero ``Ro``; no zero-rotation special case is applied."""
-        y = np.linspace(-0.5, 0.5, self.Ny+3)
-        return 1/self.Ro + self.beta*y
+        return 1/self.Ro + self.beta*self.ye[1:-1]
         
     def calc_vorticity(self):
         """Calculate the potential vorticity q = (zeta + f)/h
