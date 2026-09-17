@@ -32,19 +32,19 @@ def vortex(grid, amp, width):
     grid.v = -2*xv/width**2*amp*np.exp(-(xv**2 + yv**2)/width**2)*grid.Ro
 
 def plane_gravity_wave(grid, amp, width):
-    """Plane wave moving with gravity wave speed (c = 1)"""
+    """Plane wave moving with gravity wave speed (c = 1)
 
-    # Make gaussian bump with essentially no y-structure (~infinite width)
-    xx, yy = np.meshgrid(grid.xm, grid.ym, indexing='ij')
-    #grid.h = 1. + amp*np.exp(-xx**2/width**2)*np.sin(2*np.pi*xx*3/width)
-    grid.h = 1 + amp*np.sin(2.*np.pi*xx/width)
+    Parameters
+    ---------
+    grid: ArakawaCgrid
+        Grid object providing coordinates and variables
+    amp: float
+        Amplitude of the plane wave
+    width: float
+        Wavelength of the plane wave"""
+
+    raise NotImplementedError("Todo: Create this function!")
     
-    # For gravity waves (travelling in +x direction), u = h - 1
-    # Careful! u is not on the same grid as h
-    u_h = grid.h - 1
-    grid.u[1:-1] = (u_h[:-1] + u_h[:-1])/2.
-    grid.u[0] = 0.5*(u_h[0] + u_h[-1])
-
 def rossby(grid, amp):
 
     """Set a sinusoidal height perturbation and geostrophic velocities.
@@ -53,48 +53,16 @@ def rossby(grid, amp):
     ----------
     grid : ArakawaCGrid
         Grid providing staggered coordinates and the Rossby parameter
-        ``Ro``. Its ``h``, ``u`` and ``v`` arrays are replaced in place.
     amp : float
-        Nondimensional amplitude of the height perturbation about one.
+        Nondimensional amplitude of perturbation (written as A in notebook)
     
     Notes
     -----
     Uses zonal and meridional wavenumbers equal to pi. Velocities are
     computed on their respective staggered grids. Boundary conditions
-    and diagnostic updates are left to the caller. Returns None."""
-    k = np.pi
-    l = np.pi
+    and diagnostic updates are left to the caller. """
 
-    # h grid
-    xh, yh = np.meshgrid(grid.xm, grid.ym, indexing="ij")
-
-    # u grid
-    xu, yu = np.meshgrid(grid.xe, grid.ym, indexing="ij")
-
-    # v grid
-    xv, yv = np.meshgrid(grid.xm, grid.ye, indexing="ij")
-
-    # Height perturbation
-    grid.h = (
-        1.0
-        + amp
-        * np.cos(k*xh)
-        * np.sin(l*(yh + 0.5))
-    )
-
-    # Geostrophic u
-    grid.u = (
-        -amp * l * grid.Ro
-        * np.cos(k*xu)
-        * np.cos(l*(yu + 0.5))
-    )
-
-    # Geostrophic v
-    grid.v = (
-        -amp * k * grid.Ro
-        * np.sin(k*xv)
-        * np.sin(l*(yv + 0.5))
-    )
+    raise NotImplementedError("Todo: Create this function!")
 
 def barotropic_jet(grid, amp, width):
 
