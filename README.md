@@ -1,6 +1,8 @@
 ### Installation
 If you have git, clone the project into a directory of your choice:
+
 ```git clone -b for_students git@github.com:hinnes97/SW_summerschool.git [directory-of-choice]```
+
 Then navigate into the root directory. To install in a fresh python environment, run the following commands in the root directory from the command line:
 ```sh
 python -m venv summer_school
