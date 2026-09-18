@@ -17,6 +17,7 @@ We will install the package locally using `pip`, so that the package can be call
 ```sh
 python -m pip install -e ".[notebooks]"
 ```
+Alternatively, if you are using conda, run the pip install command inside a fresh conda environment.
 
 ### Exercises
 The exercises for the day will be found in the `examples` directory in the appropriately named sub-directories. Follow the instructions inside the jupyter notebooks.
