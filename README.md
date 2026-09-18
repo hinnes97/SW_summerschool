@@ -1,11 +1,6 @@
-```sh
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e .
-```
 ### Installation
 If you have git, clone the project into a directory of your choice:
-```git clone git@github.com:hinnes97/SW_summerschool.git [directory-of-choice]```
+```git clone -b for_students git@github.com:hinnes97/SW_summerschool.git [directory-of-choice]```
 Then navigate into the root directory. To install in a fresh python environment, run the following commands in the root directory from the command line:
 ```sh
 python -m venv summer_school
@@ -22,6 +17,7 @@ We will install the package locally using `pip`, so that the package can be call
 ```sh
 python -m pip install -e ".[notebooks]"
 ```
+Alternatively, if you are using conda, run the pip install command inside a fresh conda environment.
 
 ### Exercises
 The exercises for the day will be found in the `examples` directory in the appropriately named sub-directories. Follow the instructions inside the jupyter notebooks.
