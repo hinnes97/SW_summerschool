@@ -100,8 +100,8 @@ class ArakawaCGrid:
 
         # Set forcing
         self.forcing_params = force
-        if force["type"] == "Gill":
-            self.forcing = forcing.gill_forcing
+        if force["type"] == "exoplanet":
+            self.forcing = forcing.exoplanet_forcing
         else:
             self.forcing = forcing.null_forcing
 
@@ -320,6 +320,19 @@ class ArakawaCGrid:
 
         if self.udrag["type"] == "rayleigh":
             drag = -self.u[2:-2,2:-2]/self.udrag["tau_u"]
+        elif self.udrag["type"] =="rayleigh-showman":
+            Q = self.forcing(self) - self.h[self.realslice["h"]]/self.hdrag["tau_h"]
+            Q = np.where(Q<0, 0.0, Q)
+            
+            Q_u = np.zeros((self.Nx+1, self.Ny))
+            Q_u[1:-1,:] = (Q[1:,:] + Q[:-1,:])/2.
+            
+            # Apply bc
+            Q_u[0,:] = (Q[-1,:] + Q[0,:])/2.
+            Q_u[-1,:] = Q_u[0,:]
+            
+            h_u = (self.h[1:-2,2:-2] + self.h[2:-1,2:-2])/2.
+            drag = (-Q_u/h_u - 1./self.udrag["tau_u"])*self.u[2:-2,2:-2]
         else:
             drag = 0.0
 
@@ -341,6 +354,19 @@ class ArakawaCGrid:
 
         if self.udrag["type"] == "rayleigh":
             drag = -self.v[2:-2,2:-2]/self.udrag["tau_u"]
+        elif self.udrag["type"] =="rayleigh-showman":
+            # Get h on v grid
+            Q = self.forcing(self) - self.h[self.realslice["h"]]/self.hdrag["tau_h"]
+            Q = np.where(Q<0.0, 0.0, Q)
+            
+            Q_v = np.zeros((self.Nx, self.Ny+1))
+            Q_v[:,1:-1] = (Q[:,1:] + Q[:,:-1])/2.
+            # Only valid with rigid wall bc
+            Q_v[:,0] = Q[:,1]
+            Q_v[:,-1] = Q[:,-2]
+            Q_v = np.where(Q_v<0, 0.0, Q_v)
+            h_v = (self.h[2:-2,1:-2] + self.h[2:-2,2:-1])/2.
+            drag = (-Q_v/h_v - 1./self.udrag["tau_u"])*self.v[2:-2,2:-2]
         else:
             drag = 0.0
             
