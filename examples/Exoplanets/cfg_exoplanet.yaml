@@ -1,0 +1,28 @@
+N   : 30  # Grid length
+tstep: 1.e-3
+Ro: 100000 # Strength of rotation
+beta: 0.0
+bc  : "free-slip-wall"
+forcing:
+  type: "exoplanet"
+  amp: 0.1
+ic  :
+  type: "None"
+  amp: 0.1
+udrag :
+  type: "rayleigh"
+  tau_u: 10.
+hdrag :
+  type: "rayleigh"
+  tau_h: 1.
+# IO
+outfile : "test.nc"
+outvars:
+  - h
+  - u
+  - v
+  - E
+  - q
+
+io_freq: 10
+print_freq: 10
