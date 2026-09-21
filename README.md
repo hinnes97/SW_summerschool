@@ -1,7 +1,10 @@
-### Installation
+### Using colab
+If using Google colab, please go to [this link](https://colab.research.google.com/drive/1NuaUlaSrtBjD-o1SCQkzYi0K6Zc4pqWN?usp=sharing) and follow instructions there.
+
+### Installation using cloned repository
 If you have git, clone the project into a directory of your choice:
 ```git clone -b for_students git@github.com:hinnes97/SW_summerschool.git [directory-of-choice]```
-Then navigate into the root directory. To install in a fresh python environment, run the following commands in the root directory from the command line:
+If you don't have git, you can also download the directory using the tab on this page. Then navigate into the root directory. To install in a fresh python environment, run the following commands in the root directory from the command line:
 ```sh
 python -m venv summer_school
 ```
