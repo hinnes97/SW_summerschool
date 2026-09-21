@@ -100,8 +100,8 @@ class ArakawaCGrid:
 
         # Set forcing
         self.forcing_params = force
-        if force["type"] == "Gill":
-            self.forcing = forcing.gill_forcing
+        if force["type"] == "exoplanet":
+            self.forcing = forcing.exoplanet_forcing
         else:
             self.forcing = forcing.null_forcing
 
