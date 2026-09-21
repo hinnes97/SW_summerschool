@@ -23,7 +23,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-notebooks = ["jupyterlab"]
+notebooks = ["jupyterlab",
+	  "notebook",
+	  ]	  
 
 [tool.setuptools.packages.find]
 where = ["src"]
