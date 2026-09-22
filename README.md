@@ -10,7 +10,7 @@ python -m venv summer_school
 ```
 On mac/linux machines, run:
 ```Bash
-source ./summer_school/bin/activtate
+source ./summer_school/bin/activate
 ```
 to activate the environment. On Windows, in powershell, run:
 ```powershell
