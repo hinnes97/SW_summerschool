@@ -16,7 +16,10 @@ def gaussian(grid, amp, width, x0, y0):
     y0: float
         y-position of Gaussian perturbation
     """
-    raise NotImplementedError("Todo: Create this function!")
+
+    xx, yy = np.meshgrid(grid.xm, grid.ym, indexing='ij')
+    
+    grid.h = 1. + amp*np.exp(-((xx - x0)**2 + (yy-y0)**2)/2/width**2)
 
 def vortex(grid, amp, width):
     """Geostrophically balanced vortex
@@ -43,8 +46,13 @@ def plane_gravity_wave(grid, amp, width):
     width: float
         Wavelength of the plane wave"""
 
-    raise NotImplementedError("Todo: Create this function!")
-    
+    xx, yy = np.meshgrid(grid.xm, grid.ym, indexing='ij')
+    xe, ym = np.meshgrid(grid.xe, grid.ym, indexing='ij')
+
+    # Uncomment last part for Gaussian envelope
+    grid.h = 1. + amp*np.cos(2*np.pi*xx/width)#*np.exp(-xx**2/2/(3*width)**2)
+    grid.u = amp*np.cos(2*np.pi*xe/width)#*np.exp(-xe**2/2/width)
+        
 def rossby(grid, amp):
 
     """Set a sinusoidal height perturbation and geostrophic velocities.
@@ -62,7 +70,14 @@ def rossby(grid, amp):
     computed on their respective staggered grids. Boundary conditions
     and diagnostic updates are left to the caller. """
 
-    raise NotImplementedError("Todo: Create this function!")
+    xm, ym = np.meshgrid(grid.xm, grid.ym, indexing='ij')
+    xu, yu = np.meshgrid(grid.xe, grid.ym, indexing='ij')
+    xv, yv = np.meshgrid(grid.xm, grid.ye, indexing='ij')
+
+    grid.h = 1. - amp*np.cos(np.pi*xm)*np.cos(np.pi*ym)
+    grid.u =  -grid.Ro*amp*np.cos(np.pi*xu)*np.sin(np.pi*yu)
+    grid.v = +grid.Ro*amp*np.sin(np.pi*xv)*np.cos(np.pi*yv)
+
 
 def barotropic_jet(grid, amp, width):
 

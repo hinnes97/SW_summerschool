@@ -612,8 +612,8 @@ def animate_height_velocity(
         h_field = h[frame].T
 
         # Remove old contour collections
-        for collection in contour.collections:
-            collection.remove()
+ #       for collection in contour.collections:
+ #           collection.remove()
 
         if scale == "dynamic":
             vmin = np.nanmin(h_field)
@@ -641,7 +641,7 @@ def animate_height_velocity(
 
         title.set_text(f"t = {time[frame]:g}")
 
-        return contour.collections + [quiver, title]
+#        return contour.collections + [quiver, title]
 
     anim = FuncAnimation(
         fig,
