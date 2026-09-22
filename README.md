@@ -25,6 +25,8 @@ Alternatively, if you are using conda, run the pip install command inside a fres
 ### Exercises
 The exercises for the day will be found in the `examples` directory in the appropriately named sub-directories. Follow the instructions inside the jupyter notebooks.
 
+The exercises require you to install the shallow water code as an editable python package (using `pip install -e ...`). This will allow you to edit the python files of the code directly and the changes should be reflected immediately in the python notebook (so long as the autoreload module is correctly loaded in the ipython notebook).
+
 ### Layout
 - `src/sw_summerschool/`: model, integration, initial conditions, IO, plotting and helpers.
 - `examples/`: original notebooks, YAML configurations, and preserved local NetCDF results.
